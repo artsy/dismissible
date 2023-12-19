@@ -1,3 +1,4 @@
-export const computeTwoNumbers = (a: number, b: number): number => {
-  return a + b
-}
+export {
+  Provider as ProgressiveOnboardingProvider,
+  useProgressiveOnboardingContext,
+} from "./Context"

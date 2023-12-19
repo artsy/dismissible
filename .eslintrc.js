@@ -23,9 +23,9 @@ module.exports = {
   rules: {
     "@typescript-eslint/ban-ts-comment": 0,
     "@typescript-eslint/ban-ts-ignore": 0,
-    "@typescript-eslint/explicit-function-return-type": "warn",
+    "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/explicit-module-boundary-types": 0,
     "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-    "prettier/prettier": "error",
+    "prettier/prettier": 0,
   },
 }
