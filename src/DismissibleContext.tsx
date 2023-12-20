@@ -8,11 +8,11 @@ import React, {
 } from "react"
 import uniqBy from "lodash.uniqby"
 
-export type ProgressiveOnboardingKey = ContextProps["keys"][number]
-export type ProgressiveOnboardingKeys = ProgressiveOnboardingKey[]
+export type DismissibleKey = DismissibleContextProps["keys"][number]
+export type DismissibleKeys = DismissibleKey[]
 
 interface DismissedKey {
-  key: ProgressiveOnboardingKey
+  key: DismissibleKey
   timestamp: number
 }
 
@@ -21,12 +21,10 @@ interface DismissedKeyStatus {
   timestamp: number
 }
 
-export interface ContextProps {
+export interface DismissibleContextProps {
   dismissed: DismissedKey[]
-  dismiss: (
-    key: ProgressiveOnboardingKey | readonly ProgressiveOnboardingKey[]
-  ) => void
-  isDismissed: (key: ProgressiveOnboardingKey) => DismissedKeyStatus
+  dismiss: (key: DismissibleKey | readonly DismissibleKey[]) => void
+  isDismissed: (key: DismissibleKey) => DismissedKeyStatus
   keys: string[]
   syncFromLoggedOutUser: () => void
   /** An optional userID to track against  */
@@ -34,16 +32,16 @@ export interface ContextProps {
   __internal__: ReturnType<typeof useLocalStorageUtils>
 }
 
-export const Context = createContext<ContextProps>({
+export const DismissibleContext = createContext<DismissibleContextProps>({
   dismissed: [],
   keys: [],
   isDismissed: () => ({ status: false, timestamp: 0 }),
-} as unknown as ContextProps)
+} as unknown as DismissibleContextProps)
 
-export const Provider: React.FC<{
+export const DismissibleProvider: React.FC<{
   children: React.ReactNode
-  keys: ProgressiveOnboardingKeys
-  userID?: ContextProps["userID"]
+  keys: DismissibleKeys
+  userID?: DismissibleContextProps["userID"]
 }> = ({ children, keys = [], userID }) => {
   const id = userID ?? PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID
 
@@ -53,7 +51,7 @@ export const Provider: React.FC<{
   const { __dismiss__, get } = localStorageUtils
 
   const dismiss = useCallback(
-    (key: ProgressiveOnboardingKey | ProgressiveOnboardingKey[]) => {
+    (key: DismissibleKey | DismissibleKey[]) => {
       const keys = Array.isArray(key) ? key : [key]
       const timestamp = Date.now()
 
@@ -76,7 +74,7 @@ export const Provider: React.FC<{
   const mounted = useDidMount()
 
   const isDismissed = useCallback(
-    (key: ProgressiveOnboardingKey) => {
+    (key: DismissibleKey) => {
       if (!mounted) {
         return {
           status: false,
@@ -137,7 +135,7 @@ export const Provider: React.FC<{
   }, [id])
 
   return (
-    <Context.Provider
+    <DismissibleContext.Provider
       value={{
         dismissed,
         dismiss,
@@ -148,12 +146,12 @@ export const Provider: React.FC<{
       }}
     >
       {children}
-    </Context.Provider>
+    </DismissibleContext.Provider>
   )
 }
 
-export const useProgressiveOnboardingContext = () => {
-  return useContext(Context)
+export const useDismissibleContext = () => {
+  return useContext(DismissibleContext)
 }
 
 export const PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID = "user" as const
@@ -163,7 +161,7 @@ export const localStorageKey = (id: string) => {
 }
 
 interface UseLocalStorageUtilsProps {
-  keys: ContextProps["keys"]
+  keys: DismissibleContextProps["keys"]
 }
 
 export const useLocalStorageUtils = ({ keys }: UseLocalStorageUtilsProps) => {
@@ -193,7 +191,7 @@ export const useLocalStorageUtils = ({ keys }: UseLocalStorageUtilsProps) => {
   const __dismiss__ = (
     id: string,
     timestamp: number,
-    key: ProgressiveOnboardingKey | ProgressiveOnboardingKey[]
+    key: DismissibleKey | DismissibleKey[]
   ) => {
     const keys = Array.isArray(key) ? key : [key]
 
