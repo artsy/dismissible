@@ -2,13 +2,13 @@ import React from "react"
 import { renderHook } from "@testing-library/react-hooks"
 import {
   PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID,
-  Provider,
+  DismissibleProvider,
   useLocalStorageUtils,
-  useProgressiveOnboardingContext,
+  useDismissibleContext,
   localStorageKey,
-} from "../Context"
+} from "../DismissibleContext"
 
-describe("ProgressiveOnboardingContext", () => {
+describe("DismissibleContext", () => {
   const keys = ["follow-artist", "follow-find", "follow-highlight"]
   const id = "example-id"
 
@@ -159,13 +159,13 @@ describe("ProgressiveOnboardingContext", () => {
     afterEach(() => reset(id))
 
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <Provider keys={keys} userID={id}>
+      <DismissibleProvider keys={keys} userID={id}>
         {children}
-      </Provider>
+      </DismissibleProvider>
     )
 
     it("dismisses keys", () => {
-      const { result } = renderHook(useProgressiveOnboardingContext, {
+      const { result } = renderHook(useDismissibleContext, {
         wrapper,
       })
 
@@ -215,11 +215,11 @@ describe("ProgressiveOnboardingContext", () => {
 
   describe("syncFromLoggedOutUser", () => {
     it("does nothing if the user is logged out", () => {
-      const { result } = renderHook(useProgressiveOnboardingContext, {
+      const { result } = renderHook(useDismissibleContext, {
         wrapper: ({ children }: { children: React.ReactNode }) => (
-          <Provider keys={keys} userID={id}>
+          <DismissibleProvider keys={keys} userID={id}>
             {children}
-          </Provider>
+          </DismissibleProvider>
         ),
       })
 
@@ -244,11 +244,11 @@ describe("ProgressiveOnboardingContext", () => {
 
         expect(get(id)).toEqual([])
 
-        const { result } = renderHook(useProgressiveOnboardingContext, {
+        const { result } = renderHook(useDismissibleContext, {
           wrapper: ({ children }: { children: React.ReactNode }) => (
-            <Provider keys={keys} userID={id}>
+            <DismissibleProvider keys={keys} userID={id}>
               {children}
-            </Provider>
+            </DismissibleProvider>
           ),
         })
 

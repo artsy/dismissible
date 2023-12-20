@@ -1,4 +1,4 @@
 export {
-  Provider as ProgressiveOnboardingProvider,
-  useProgressiveOnboardingContext,
-} from "./Context"
+  DismissibleProvider,
+  useDismissibleContext,
+} from "./DismissibleContext"
