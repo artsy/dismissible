@@ -15,6 +15,7 @@
     "watch": "tsc -p . --watch"
   },
   "devDependencies": {
+    "@artsy/auto-config": "^1.2.0",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/jest": "^29.1.2",
     "@types/lodash.uniqby": "^4.7.9",
