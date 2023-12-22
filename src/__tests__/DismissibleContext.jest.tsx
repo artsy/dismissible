@@ -1,7 +1,7 @@
 import React from "react"
 import { renderHook } from "@testing-library/react-hooks"
 import {
-  PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID,
+  DISMISSIBLE_LOGGED_OUT_USER_ID,
   DismissibleProvider,
   useLocalStorageUtils,
   useDismissibleContext,
@@ -230,7 +230,7 @@ describe("DismissibleContext", () => {
 
     describe("logged in", () => {
       it("syncs the dismissed state from the logged out user", () => {
-        const loggedOutUserId = PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID
+        const loggedOutUserId = DISMISSIBLE_LOGGED_OUT_USER_ID
 
         const loggedOutDismissals = [
           { key: "follow-artist", timestamp: 555 },

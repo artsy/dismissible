@@ -8,8 +8,8 @@ import React, {
 } from "react"
 import uniqBy from "lodash.uniqby"
 
-export type DismissibleKey = DismissibleContextProps["keys"][number]
-export type DismissibleKeys = DismissibleKey[]
+type DismissibleKey = DismissibleContextProps["keys"][number]
+type DismissibleKeys = DismissibleKey[]
 
 interface DismissedKey {
   key: DismissibleKey
@@ -21,7 +21,7 @@ interface DismissedKeyStatus {
   timestamp: number
 }
 
-export interface DismissibleContextProps {
+interface DismissibleContextProps {
   dismissed: DismissedKey[]
   dismiss: (key: DismissibleKey | readonly DismissibleKey[]) => void
   isDismissed: (key: DismissibleKey) => DismissedKeyStatus
@@ -29,10 +29,9 @@ export interface DismissibleContextProps {
   syncFromLoggedOutUser: () => void
   /** An optional userID to track against  */
   userID?: string | null
-  __internal__: ReturnType<typeof useLocalStorageUtils>
 }
 
-export const DismissibleContext = createContext<DismissibleContextProps>({
+const DismissibleContext = createContext<DismissibleContextProps>({
   dismissed: [],
   keys: [],
   isDismissed: () => ({ status: false, timestamp: 0 }),
@@ -43,7 +42,7 @@ export const DismissibleProvider: React.FC<{
   keys: DismissibleKeys
   userID?: DismissibleContextProps["userID"]
 }> = ({ children, keys = [], userID }) => {
-  const id = userID ?? PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID
+  const id = userID ?? DISMISSIBLE_LOGGED_OUT_USER_ID
 
   const [dismissed, setDismissed] = useState<DismissedKey[]>([])
 
@@ -96,11 +95,11 @@ export const DismissibleProvider: React.FC<{
    * to login, we need to sync up the dismissed state from the logged out user
    */
   const syncFromLoggedOutUser = useCallback(() => {
-    if (id === PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID) {
+    if (id === DISMISSIBLE_LOGGED_OUT_USER_ID) {
       return
     }
 
-    const loggedOutDismissals = get(PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID)
+    const loggedOutDismissals = get(DISMISSIBLE_LOGGED_OUT_USER_ID)
     const loggedInDismissals = get(id)
 
     const dismissals = uniqBy(
@@ -111,9 +110,7 @@ export const DismissibleProvider: React.FC<{
     setDismissed(dismissals)
 
     localStorage.setItem(localStorageKey(id), JSON.stringify(dismissals))
-    localStorage.removeItem(
-      localStorageKey(PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID)
-    )
+    localStorage.removeItem(localStorageKey(DISMISSIBLE_LOGGED_OUT_USER_ID))
   }, [id])
 
   // Ensure that the dismissed state stays in sync incase the user
@@ -142,7 +139,6 @@ export const DismissibleProvider: React.FC<{
         isDismissed,
         keys,
         syncFromLoggedOutUser,
-        __internal__: localStorageUtils,
       }}
     >
       {children}
@@ -154,7 +150,7 @@ export const useDismissibleContext = () => {
   return useContext(DismissibleContext)
 }
 
-export const PROGRESSIVE_ONBOARDING_LOGGED_OUT_USER_ID = "user" as const
+export const DISMISSIBLE_LOGGED_OUT_USER_ID = "user" as const
 
 export const localStorageKey = (id: string) => {
   return `progressive-onboarding.dismissed.${id}`
