@@ -45,7 +45,11 @@ const NewFeatureAlert = () => {
     return <>{children}</>
   }
 
-  return <Popover message="Check out this new feature!">{children}</Popover>
+  return (
+    <Popover message="Check out this new feature!" onClick={handleClose}>
+      {children}
+    </Popover>
+  )
 }
 ```
 
