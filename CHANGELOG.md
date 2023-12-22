@@ -1,3 +1,15 @@
+# v0.3.0 (Fri Dec 22 2023)
+
+#### 🚀  Enhancement
+
+- docs(readme): Add readme docs [#7](https://github.com/artsy/dismissible/pull/7) ([@damassi](https://github.com/damassi))
+
+#### Authors: 1
+
+- Christopher Pappas ([@damassi](https://github.com/damassi))
+
+---
+
 # v0.2.0 (Wed Dec 20 2023)
 
 #### 🚀  Enhancement
