@@ -1,6 +1,6 @@
 # @artsy/dismissible
 
-A package that stores dismissible key/value entries in localStorage, which can be used in apps that require progressive onboarding and the like.
+Store dismissible key/value entries in localStorage, which can be used for things like onboarding, notifications and more.
 
 ## Setup and Use
 
