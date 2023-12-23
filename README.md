@@ -38,7 +38,7 @@ const NewFeatureAlert = () => {
   const isDisplayable = !isDismissed("newFeature").status
 
   const handleClose = () => {
-    dismiss(ALERT_ID)
+    dismiss("newFeature")
   }
 
   if (!isDisplayable) {
