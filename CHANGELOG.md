@@ -1,3 +1,15 @@
+# v0.3.3 (Sat Dec 23 2023)
+
+#### ⚠️ Pushed to `main`
+
+- Update README.md ([@damassi](https://github.com/damassi))
+
+#### Authors: 1
+
+- Christopher Pappas ([@damassi](https://github.com/damassi))
+
+---
+
 # v0.3.2 (Fri Dec 22 2023)
 
 #### ⚠️ Pushed to `main`
