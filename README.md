@@ -59,7 +59,7 @@ The `useDismissibleContext` hook returns a few useful things for managing dismis
 
 ```jsx
 const App = () => {
-  const { dismiss, dismissed, isDismissed, keys, syncFromLoggedOutUser } =
+  const { dismiss, dismissed, isDismissed, keys, addKey syncFromLoggedOutUser } =
     useDismissibleContext()
 
   // Dismisses a key
@@ -70,6 +70,9 @@ const App = () => {
 
   // Status of the thing dismissed, including timestamp
   isDismissied("id")
+
+  // Add a new key at runtime
+  addKey("otherID")
 
   // If a logged-out user logs in, resync so that dismissed keys don't reappear
   syncFromLoggedOutUser()

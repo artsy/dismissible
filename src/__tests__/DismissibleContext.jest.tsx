@@ -14,13 +14,15 @@ describe("DismissibleContext", () => {
 
   beforeEach(() => {
     jest.useFakeTimers()
+    localStorage.clear()
   })
 
   afterEach(() => {
     jest.useRealTimers()
+    localStorage.clear()
   })
 
-  const { get, reset, parse, __dismiss__ } = useLocalStorageUtils({
+  const { get, set, reset, parse, __dismiss__ } = useLocalStorageUtils({
     keys,
   })
 
@@ -163,6 +165,25 @@ describe("DismissibleContext", () => {
     })
   })
 
+  describe("set", () => {
+    afterEach(() => reset(id))
+
+    it("sets the value in local storage", () => {
+      act(() => {
+        set(id)
+      })
+      expect(localStorage.getItem(localStorageKey(id))).toEqual(id)
+    })
+
+    it("persists the value to localStorage with the given key", () => {
+      const testKey = "test-key"
+      act(() => {
+        set(testKey)
+      })
+      expect(localStorage.getItem(localStorageKey(testKey))).toBe(testKey)
+    })
+  })
+
   describe("dismiss", () => {
     afterEach(() => reset(id))
 
@@ -287,20 +308,16 @@ describe("DismissibleContext", () => {
         wrapper,
       })
 
-      // Initial keys array should contain the provided keys
       expect(result.current.keys).toEqual(keys)
 
-      // Add a new key
       const newKey = "alert-visible-after-action"
       act(() => {
         result.current.addKey(newKey)
       })
 
-      // Keys array should now include the new key
       expect(result.current.keys).toContain(newKey)
-
-      // Length should be original length + 1
       expect(result.current.keys.length).toBe(keys.length + 1)
+      expect(localStorage.getItem(localStorageKey(newKey))).toBe(newKey)
     })
 
     it("doesn't add duplicate keys", () => {
@@ -308,30 +325,24 @@ describe("DismissibleContext", () => {
         wrapper,
       })
 
-      // Add an existing key
       const existingKey = keys[0]
       act(() => {
         result.current.addKey(existingKey)
       })
 
-      // Keys array length should remain the same
       expect(result.current.keys.length).toBe(keys.length)
 
-      // Add a new key
       const newKey = "new-feature-alert"
       act(() => {
         result.current.addKey(newKey)
       })
 
-      // Keys array should now include the new key
       expect(result.current.keys).toContain(newKey)
 
-      // Try adding the same key again
       act(() => {
         result.current.addKey(newKey)
       })
 
-      // Keys array length should remain the same (should not add duplicate)
       expect(result.current.keys.length).toBe(keys.length + 1)
     })
 
@@ -340,36 +351,50 @@ describe("DismissibleContext", () => {
         wrapper,
       })
 
-      // Add a new key
       const newKey = "runtime-added-alert"
       act(() => {
         result.current.addKey(newKey)
       })
 
-      // Initially it should not be dismissed
       expect(result.current.isDismissed(newKey)).toEqual({
         status: false,
         timestamp: 0,
       })
 
-      // Make sure the key was added to the context
       expect(result.current.keys).toContain(newKey)
 
-      // Dismiss the new key
       act(() => {
         result.current.dismiss(newKey)
       })
 
-      // Check that it's now dismissed in the context
       expect(result.current.isDismissed(newKey)).toEqual({
         status: true,
         timestamp: expect.any(Number),
       })
 
-      // The key should be in the dismissed array in the context
       expect(
         result.current.dismissed.find((d) => d.key === newKey)
       ).toBeTruthy()
+    })
+
+    it("loads previously added keys from localStorage on mount", () => {
+      const storedKey = "previously-added-key"
+      localStorage.setItem(localStorageKey(storedKey), storedKey)
+
+      const { result } = renderHook(useDismissibleContext, {
+        wrapper,
+      })
+
+      expect(result.current.keys).toContain(storedKey)
+
+      act(() => {
+        result.current.dismiss(storedKey)
+      })
+
+      expect(result.current.isDismissed(storedKey)).toEqual({
+        status: true,
+        timestamp: expect.any(Number),
+      })
     })
   })
 })
