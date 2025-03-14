@@ -1,5 +1,5 @@
 import React from "react"
-import { renderHook } from "@testing-library/react-hooks"
+import { renderHook, act } from "@testing-library/react-hooks"
 import {
   DISMISSIBLE_LOGGED_OUT_USER_ID,
   DismissibleProvider,
@@ -11,6 +11,14 @@ import {
 describe("DismissibleContext", () => {
   const keys = ["follow-artist", "follow-find", "follow-highlight"]
   const id = "example-id"
+
+  beforeEach(() => {
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+  })
 
   const { get, reset, parse, __dismiss__ } = useLocalStorageUtils({
     keys,
@@ -169,7 +177,9 @@ describe("DismissibleContext", () => {
         wrapper,
       })
 
-      result.current.dismiss("follow-artist")
+      act(() => {
+        result.current.dismiss("follow-artist")
+      })
 
       expect(result.current.isDismissed("follow-artist")).toEqual({
         status: true,
@@ -190,7 +200,9 @@ describe("DismissibleContext", () => {
         { key: "follow-artist", timestamp: expect.any(Number) },
       ])
 
-      result.current.dismiss(["follow-find", "follow-highlight"])
+      act(() => {
+        result.current.dismiss(["follow-find", "follow-highlight"])
+      })
 
       expect(result.current.isDismissed("follow-artist")).toEqual({
         status: true,
@@ -223,7 +235,9 @@ describe("DismissibleContext", () => {
         ),
       })
 
-      result.current.syncFromLoggedOutUser()
+      act(() => {
+        result.current.syncFromLoggedOutUser()
+      })
 
       expect(get(id)).toEqual([])
     })
@@ -252,10 +266,110 @@ describe("DismissibleContext", () => {
           ),
         })
 
-        result.current.syncFromLoggedOutUser()
+        act(() => {
+          result.current.syncFromLoggedOutUser()
+        })
 
         expect(get(id)).toEqual(loggedOutDismissals)
       })
+    })
+  })
+
+  describe("addKey", () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <DismissibleProvider keys={keys} userID={id}>
+        {children}
+      </DismissibleProvider>
+    )
+
+    it("adds a new key to the keys array", () => {
+      const { result } = renderHook(useDismissibleContext, {
+        wrapper,
+      })
+
+      // Initial keys array should contain the provided keys
+      expect(result.current.keys).toEqual(keys)
+
+      // Add a new key
+      const newKey = "alert-visible-after-action"
+      act(() => {
+        result.current.addKey(newKey)
+      })
+
+      // Keys array should now include the new key
+      expect(result.current.keys).toContain(newKey)
+
+      // Length should be original length + 1
+      expect(result.current.keys.length).toBe(keys.length + 1)
+    })
+
+    it("doesn't add duplicate keys", () => {
+      const { result } = renderHook(useDismissibleContext, {
+        wrapper,
+      })
+
+      // Add an existing key
+      const existingKey = keys[0]
+      act(() => {
+        result.current.addKey(existingKey)
+      })
+
+      // Keys array length should remain the same
+      expect(result.current.keys.length).toBe(keys.length)
+
+      // Add a new key
+      const newKey = "new-feature-alert"
+      act(() => {
+        result.current.addKey(newKey)
+      })
+
+      // Keys array should now include the new key
+      expect(result.current.keys).toContain(newKey)
+
+      // Try adding the same key again
+      act(() => {
+        result.current.addKey(newKey)
+      })
+
+      // Keys array length should remain the same (should not add duplicate)
+      expect(result.current.keys.length).toBe(keys.length + 1)
+    })
+
+    it("allows dismissing a dynamically added key", () => {
+      const { result } = renderHook(useDismissibleContext, {
+        wrapper,
+      })
+
+      // Add a new key
+      const newKey = "runtime-added-alert"
+      act(() => {
+        result.current.addKey(newKey)
+      })
+
+      // Initially it should not be dismissed
+      expect(result.current.isDismissed(newKey)).toEqual({
+        status: false,
+        timestamp: 0,
+      })
+
+      // Make sure the key was added to the context
+      expect(result.current.keys).toContain(newKey)
+
+      // Dismiss the new key
+      act(() => {
+        result.current.dismiss(newKey)
+      })
+
+      // Check that it's now dismissed in the context
+      expect(result.current.isDismissed(newKey)).toEqual({
+        status: true,
+        timestamp: expect.any(Number),
+      })
+
+      // The key should be in the dismissed array in the context
+      expect(
+        result.current.dismissed.find((d) => d.key === newKey)
+      ).toBeTruthy()
     })
   })
 })
