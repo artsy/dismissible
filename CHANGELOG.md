@@ -1,3 +1,15 @@
+# v0.4.0 (Sat Mar 15 2025)
+
+#### 🚀  Enhancement
+
+- feat: add addKey function [#8](https://github.com/artsy/dismissible/pull/8) ([@damassi](https://github.com/damassi))
+
+#### Authors: 1
+
+- Christopher Pappas ([@damassi](https://github.com/damassi))
+
+---
+
 # v0.3.3 (Sat Dec 23 2023)
 
 #### ⚠️ Pushed to `main`
