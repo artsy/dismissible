@@ -1,5 +1,5 @@
 import React from "react"
-import { renderHook } from "@testing-library/react-hooks"
+import { renderHook, act } from "@testing-library/react-hooks"
 import {
   DISMISSIBLE_LOGGED_OUT_USER_ID,
   DismissibleProvider,
@@ -12,7 +12,17 @@ describe("DismissibleContext", () => {
   const keys = ["follow-artist", "follow-find", "follow-highlight"]
   const id = "example-id"
 
-  const { get, reset, parse, __dismiss__ } = useLocalStorageUtils({
+  beforeEach(() => {
+    jest.useFakeTimers()
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    jest.useRealTimers()
+    localStorage.clear()
+  })
+
+  const { get, set, reset, parse, __dismiss__ } = useLocalStorageUtils({
     keys,
   })
 
@@ -155,6 +165,25 @@ describe("DismissibleContext", () => {
     })
   })
 
+  describe("set", () => {
+    afterEach(() => reset(id))
+
+    it("sets the value in local storage", () => {
+      act(() => {
+        set(id)
+      })
+      expect(localStorage.getItem(localStorageKey(id))).toEqual(id)
+    })
+
+    it("persists the value to localStorage with the given key", () => {
+      const testKey = "test-key"
+      act(() => {
+        set(testKey)
+      })
+      expect(localStorage.getItem(localStorageKey(testKey))).toBe(testKey)
+    })
+  })
+
   describe("dismiss", () => {
     afterEach(() => reset(id))
 
@@ -169,7 +198,9 @@ describe("DismissibleContext", () => {
         wrapper,
       })
 
-      result.current.dismiss("follow-artist")
+      act(() => {
+        result.current.dismiss("follow-artist")
+      })
 
       expect(result.current.isDismissed("follow-artist")).toEqual({
         status: true,
@@ -190,7 +221,9 @@ describe("DismissibleContext", () => {
         { key: "follow-artist", timestamp: expect.any(Number) },
       ])
 
-      result.current.dismiss(["follow-find", "follow-highlight"])
+      act(() => {
+        result.current.dismiss(["follow-find", "follow-highlight"])
+      })
 
       expect(result.current.isDismissed("follow-artist")).toEqual({
         status: true,
@@ -223,7 +256,9 @@ describe("DismissibleContext", () => {
         ),
       })
 
-      result.current.syncFromLoggedOutUser()
+      act(() => {
+        result.current.syncFromLoggedOutUser()
+      })
 
       expect(get(id)).toEqual([])
     })
@@ -252,9 +287,113 @@ describe("DismissibleContext", () => {
           ),
         })
 
-        result.current.syncFromLoggedOutUser()
+        act(() => {
+          result.current.syncFromLoggedOutUser()
+        })
 
         expect(get(id)).toEqual(loggedOutDismissals)
+      })
+    })
+  })
+
+  describe("addKey", () => {
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+      <DismissibleProvider keys={keys} userID={id}>
+        {children}
+      </DismissibleProvider>
+    )
+
+    it("adds a new key to the keys array", () => {
+      const { result } = renderHook(useDismissibleContext, {
+        wrapper,
+      })
+
+      expect(result.current.keys).toEqual(keys)
+
+      const newKey = "alert-visible-after-action"
+      act(() => {
+        result.current.addKey(newKey)
+      })
+
+      expect(result.current.keys).toContain(newKey)
+      expect(result.current.keys.length).toBe(keys.length + 1)
+      expect(localStorage.getItem(localStorageKey(newKey))).toBe(newKey)
+    })
+
+    it("doesn't add duplicate keys", () => {
+      const { result } = renderHook(useDismissibleContext, {
+        wrapper,
+      })
+
+      const existingKey = keys[0]
+      act(() => {
+        result.current.addKey(existingKey)
+      })
+
+      expect(result.current.keys.length).toBe(keys.length)
+
+      const newKey = "new-feature-alert"
+      act(() => {
+        result.current.addKey(newKey)
+      })
+
+      expect(result.current.keys).toContain(newKey)
+
+      act(() => {
+        result.current.addKey(newKey)
+      })
+
+      expect(result.current.keys.length).toBe(keys.length + 1)
+    })
+
+    it("allows dismissing a dynamically added key", () => {
+      const { result } = renderHook(useDismissibleContext, {
+        wrapper,
+      })
+
+      const newKey = "runtime-added-alert"
+      act(() => {
+        result.current.addKey(newKey)
+      })
+
+      expect(result.current.isDismissed(newKey)).toEqual({
+        status: false,
+        timestamp: 0,
+      })
+
+      expect(result.current.keys).toContain(newKey)
+
+      act(() => {
+        result.current.dismiss(newKey)
+      })
+
+      expect(result.current.isDismissed(newKey)).toEqual({
+        status: true,
+        timestamp: expect.any(Number),
+      })
+
+      expect(
+        result.current.dismissed.find((d) => d.key === newKey)
+      ).toBeTruthy()
+    })
+
+    it("loads previously added keys from localStorage on mount", () => {
+      const storedKey = "previously-added-key"
+      localStorage.setItem(localStorageKey(storedKey), storedKey)
+
+      const { result } = renderHook(useDismissibleContext, {
+        wrapper,
+      })
+
+      expect(result.current.keys).toContain(storedKey)
+
+      act(() => {
+        result.current.dismiss(storedKey)
+      })
+
+      expect(result.current.isDismissed(storedKey)).toEqual({
+        status: true,
+        timestamp: expect.any(Number),
       })
     })
   })

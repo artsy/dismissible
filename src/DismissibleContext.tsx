@@ -29,24 +29,37 @@ interface DismissibleContextProps {
   syncFromLoggedOutUser: () => void
   /** An optional userID to track against  */
   userID?: string | null
+  /** Add a new key to the dismissible context */
+  addKey: (key: DismissibleKey) => void
 }
 
 const DismissibleContext = createContext<DismissibleContextProps>({
   dismissed: [],
   keys: [],
   isDismissed: () => ({ status: false, timestamp: 0 }),
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  addKey: () => {},
 } as unknown as DismissibleContextProps)
 
 export const DismissibleProvider: React.FC<{
   children: React.ReactNode
   keys: DismissibleKeys
   userID?: DismissibleContextProps["userID"]
-}> = ({ children, keys = [], userID }) => {
+}> = ({ children, keys: initialKeys = [], userID }) => {
   const id = userID ?? DISMISSIBLE_LOGGED_OUT_USER_ID
 
-  const [dismissed, setDismissed] = useState<DismissedKey[]>([])
+  const [keys, setKeys] = useState<DismissibleKeys>(() => {
+    const storedKeys = loadKeysFromStorage(initialKeys)
 
+    return [
+      ...initialKeys,
+      ...storedKeys, // Keys were added from elsewhere, via addKey
+    ]
+  })
+
+  const [dismissed, setDismissed] = useState<DismissedKey[]>([])
   const localStorageUtils = useLocalStorageUtils({ keys })
+
   const { __dismiss__, get } = localStorageUtils
 
   const dismiss = useCallback(
@@ -61,6 +74,10 @@ export const DismissibleProvider: React.FC<{
           [...prevDismissed, ...keys.map((k) => ({ key: k, timestamp }))],
           (d) => d.key
         )
+      })
+
+      setKeys((prevKeys) => {
+        return prevKeys.filter((prevKey) => prevKey !== key)
       })
     },
     [id]
@@ -113,6 +130,25 @@ export const DismissibleProvider: React.FC<{
     localStorage.removeItem(localStorageKey(DISMISSIBLE_LOGGED_OUT_USER_ID))
   }, [id])
 
+  const addKey = useCallback(
+    (key: DismissibleKey) => {
+      setKeys((prevKeys) => {
+        // Only add the key if it doesn't already exist
+        if (!prevKeys.includes(key)) {
+          // Store the key in localStorage so it persists between page loads
+          if (localStorageUtils.get(key)) {
+            localStorageUtils.reset(key)
+          }
+
+          localStorageUtils.set(key)
+          return [...prevKeys, key]
+        }
+        return prevKeys
+      })
+    },
+    [localStorageUtils]
+  )
+
   // Ensure that the dismissed state stays in sync incase the user
   // has multiple tabs open.
   useEffect(() => {
@@ -139,6 +175,7 @@ export const DismissibleProvider: React.FC<{
         isDismissed,
         keys,
         syncFromLoggedOutUser,
+        addKey,
       }}
     >
       {children}
@@ -151,9 +188,47 @@ export const useDismissibleContext = () => {
 }
 
 export const DISMISSIBLE_LOGGED_OUT_USER_ID = "user" as const
+export const PREFIX = `progressive-onboarding.dismissed`
 
 export const localStorageKey = (id: string) => {
-  return `progressive-onboarding.dismissed.${id}`
+  return `${PREFIX}.${id}`
+}
+
+const loadKeysFromStorage = (initialKeys: DismissibleKeys): DismissibleKeys => {
+  const allStorageKeys = Array.from(
+    { length: localStorage.length },
+    (_, index) => localStorage.key(index)
+  ).filter(Boolean) as string[]
+
+  const dynamicKeys = allStorageKeys.reduce<string[]>((acc, storageKey) => {
+    if (!storageKey.startsWith(PREFIX)) {
+      return acc
+    }
+
+    const key = localStorage.getItem(storageKey)
+
+    if (!key) {
+      return acc
+    }
+    if (initialKeys.includes(key)) {
+      return acc
+    }
+
+    let isDismissed = false
+    try {
+      isDismissed = JSON.parse(key)[0].timestamp
+    } catch (error) {
+      //
+    }
+
+    if (!isDismissed) {
+      acc.push(key)
+    }
+
+    return acc
+  }, [])
+
+  return dynamicKeys
 }
 
 interface UseLocalStorageUtilsProps {
@@ -161,13 +236,21 @@ interface UseLocalStorageUtilsProps {
 }
 
 export const useLocalStorageUtils = ({ keys }: UseLocalStorageUtilsProps) => {
-  const schema = Yup.object().shape({
-    key: Yup.string().oneOf([...keys]),
-    timestamp: Yup.number(),
-  })
+  const getSchema = () => {
+    return Yup.object().shape({
+      key: Yup.string()
+        .required()
+        .oneOf([...keys]),
+      timestamp: Yup.number().required(),
+    })
+  }
 
-  const isValid = (value: DismissedKey): value is DismissedKey => {
-    return schema.isValidSync(value)
+  const isValid = (value: any): value is DismissedKey => {
+    try {
+      return getSchema().isValidSync(value)
+    } catch (err) {
+      return false
+    }
   }
 
   const parse = (value: string | null): DismissedKey[] => {
@@ -177,6 +260,7 @@ export const useLocalStorageUtils = ({ keys }: UseLocalStorageUtilsProps) => {
       const parsed = JSON.parse(value)
 
       return parsed.filter((obj: DismissedKey) => {
+        // Only return keys that are in the current keys array
         return isValid(obj) && keys.includes(obj.key)
       })
     } catch (err) {
@@ -189,24 +273,33 @@ export const useLocalStorageUtils = ({ keys }: UseLocalStorageUtilsProps) => {
     timestamp: number,
     key: DismissibleKey | DismissibleKey[]
   ) => {
-    const keys = Array.isArray(key) ? key : [key]
+    const keysToAdd = Array.isArray(key) ? key : [key]
 
-    keys.forEach((key) => {
+    keysToAdd.forEach((key) => {
       const item = localStorage.getItem(localStorageKey(id))
       const dismissed = parse(item)
 
-      localStorage.setItem(
-        localStorageKey(id),
-        JSON.stringify(
-          uniqBy([...dismissed, { key, timestamp }], ({ key }) => key)
+      reset(key)
+
+      // Only save to localStorage if this key is in our known keys
+      if (keys.includes(key)) {
+        localStorage.setItem(
+          localStorageKey(id),
+          JSON.stringify(
+            uniqBy([...dismissed, { key, timestamp }], ({ key }) => key)
+          )
         )
-      )
+      }
     })
   }
 
   const get = (id: string) => {
     const item = localStorage.getItem(localStorageKey(id))
     return parse(item)
+  }
+
+  const set = (id: string) => {
+    localStorage.setItem(localStorageKey(id), id)
   }
 
   const reset = (id: string) => {
@@ -216,10 +309,12 @@ export const useLocalStorageUtils = ({ keys }: UseLocalStorageUtilsProps) => {
   return {
     __dismiss__,
     get,
+    set,
     isValid,
     parse,
     reset,
-    schema,
+    schema: getSchema(),
+    loadStoredKeys: () => loadKeysFromStorage(keys),
   }
 }
 

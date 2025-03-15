@@ -1,42 +1,48 @@
 version: 2.1
 
 orbs:
-  yarn: artsy/yarn@6.2.0
-  auto: artsy/auto@2.1.0
+  auto: artsy/auto@2.2.0
+  node: circleci/node@6.3.0
 
 workflows:
   build_and_verify:
     jobs:
-      - yarn/workflow-queue
-      - yarn/update-cache:
-          requires:
-            - yarn/workflow-queue
-      - yarn/lint:
-          requires:
-            - yarn/workflow-queue
-      - yarn/type-check:
-          requires:
-            - yarn/workflow-queue
-      - yarn/test:
-          requires:
-            - yarn/workflow-queue
+      - node/run:
+          name: lint
+          pkg-manager: yarn
+          yarn-run: lint
+          version: 18.15.0
+
+      - node/run:
+          name: type-check
+          pkg-manager: yarn
+          yarn-run: type-check
+          version: 18.15.0
+
+      - node/run:
+          name: test
+          pkg-manager: yarn
+          yarn-run: test
+          version: 18.15.0
+
       - auto/publish-canary:
           context: npm-deploy
           filters:
             branches:
               ignore: main
+          node-version: "16.10.0"
           requires:
-            - yarn/test
-            - yarn/lint
-            - yarn/type-check
-            - yarn/update-cache
+            - test
+            - lint
+            - type-check
+
       - auto/publish:
           context: npm-deploy
           filters:
             branches:
               only: main
+          node-version: "16.10.0"
           requires:
-            - yarn/test
-            - yarn/lint
-            - yarn/type-check
-            - yarn/update-cache
+            - test
+            - lint
+            - type-check
