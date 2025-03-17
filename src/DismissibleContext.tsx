@@ -195,6 +195,11 @@ export const localStorageKey = (id: string) => {
 }
 
 const loadKeysFromStorage = (initialKeys: DismissibleKeys): DismissibleKeys => {
+  // Make SSR safe
+  if (typeof window === "undefined") {
+    return []
+  }
+
   const allStorageKeys = Array.from(
     { length: localStorage.length },
     (_, index) => localStorage.key(index)
