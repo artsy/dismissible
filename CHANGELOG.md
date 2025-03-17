@@ -1,3 +1,15 @@
+# v0.4.1 (Mon Mar 17 2025)
+
+#### 🐛  Bug Fix
+
+- fix: make SSR safe [#9](https://github.com/artsy/dismissible/pull/9) ([@damassi](https://github.com/damassi))
+
+#### Authors: 1
+
+- Christopher Pappas ([@damassi](https://github.com/damassi))
+
+---
+
 # v0.4.0 (Sat Mar 15 2025)
 
 #### 🚀  Enhancement
