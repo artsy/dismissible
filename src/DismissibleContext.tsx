@@ -205,7 +205,8 @@ const loadKeysFromStorage = (initialKeys: DismissibleKeys): DismissibleKeys => {
       return acc
     }
 
-    const key = localStorage.getItem(storageKey)
+    const key =
+      typeof window !== "undefined" && localStorage.getItem(storageKey)
 
     if (!key) {
       return acc
