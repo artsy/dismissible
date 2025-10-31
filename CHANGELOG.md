@@ -1,3 +1,15 @@
+# v0.5.0 (Fri Oct 31 2025)
+
+#### 🚀  Enhancement
+
+- feat: add conventional commit github action [#10](https://github.com/artsy/dismissible/pull/10) ([@amonkhouse](https://github.com/amonkhouse))
+
+#### Authors: 1
+
+- Amy Monkhouse ([@amonkhouse](https://github.com/amonkhouse))
+
+---
+
 # v0.4.1 (Mon Mar 17 2025)
 
 #### 🐛  Bug Fix
