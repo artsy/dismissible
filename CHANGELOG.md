@@ -1,3 +1,15 @@
+# v0.7.0 (Mon Nov 10 2025)
+
+#### 🚀  Enhancement
+
+- feat: add yarn check github action [#12](https://github.com/artsy/dismissible/pull/12) ([@mc-jones](https://github.com/mc-jones))
+
+#### Authors: 1
+
+- Matt Jones ([@mc-jones](https://github.com/mc-jones))
+
+---
+
 # v0.6.0 (Mon Nov 10 2025)
 
 #### 🚀  Enhancement
