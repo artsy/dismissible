@@ -1,3 +1,15 @@
+# v0.6.0 (Mon Nov 10 2025)
+
+#### 🚀  Enhancement
+
+- feat: add add-version-label github action [#11](https://github.com/artsy/dismissible/pull/11) ([@amonkhouse](https://github.com/amonkhouse))
+
+#### Authors: 1
+
+- Amy Monkhouse ([@amonkhouse](https://github.com/amonkhouse))
+
+---
+
 # v0.5.0 (Fri Oct 31 2025)
 
 #### 🚀  Enhancement
