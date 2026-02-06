@@ -1,3 +1,15 @@
+# v0.8.0 (Fri Feb 06 2026)
+
+#### 🚀  Enhancement
+
+- feat: add triggers to conventional commits check [#13](https://github.com/artsy/dismissible/pull/13) ([@amonkhouse](https://github.com/amonkhouse))
+
+#### Authors: 1
+
+- Amy Monkhouse ([@amonkhouse](https://github.com/amonkhouse))
+
+---
+
 # v0.7.0 (Mon Nov 10 2025)
 
 #### 🚀  Enhancement
