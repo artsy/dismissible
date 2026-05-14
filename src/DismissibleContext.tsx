@@ -93,7 +93,7 @@ export const DismissibleProvider: React.FC<{
     (key: DismissibleKey) => {
       if (!mounted) {
         return {
-          status: false,
+          status: true,
           timestamp: 0,
         }
       }
