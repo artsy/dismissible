@@ -36,7 +36,7 @@ interface DismissibleContextProps {
 const DismissibleContext = createContext<DismissibleContextProps>({
   dismissed: [],
   keys: [],
-  isDismissed: () => ({ status: false, timestamp: 0 }),
+  isDismissed: () => ({ status: true, timestamp: 0 }),
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   addKey: () => {},
 } as unknown as DismissibleContextProps)
