@@ -1,3 +1,15 @@
+# v0.8.1 (Fri May 15 2026)
+
+#### 🐛  Bug Fix
+
+- fix: assume dismissibles are dismissed until mounted [#14](https://github.com/artsy/dismissible/pull/14) ([@iskounen](https://github.com/iskounen))
+
+#### Authors: 1
+
+- Adam Iskounen ([@iskounen](https://github.com/iskounen))
+
+---
+
 # v0.8.0 (Fri Feb 06 2026)
 
 #### 🚀  Enhancement
