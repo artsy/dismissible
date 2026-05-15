@@ -36,7 +36,7 @@ interface DismissibleContextProps {
 const DismissibleContext = createContext<DismissibleContextProps>({
   dismissed: [],
   keys: [],
-  isDismissed: () => ({ status: false, timestamp: 0 }),
+  isDismissed: () => ({ status: true, timestamp: 0 }),
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   addKey: () => {},
 } as unknown as DismissibleContextProps)
@@ -48,14 +48,7 @@ export const DismissibleProvider: React.FC<{
 }> = ({ children, keys: initialKeys = [], userID }) => {
   const id = userID ?? DISMISSIBLE_LOGGED_OUT_USER_ID
 
-  const [keys, setKeys] = useState<DismissibleKeys>(() => {
-    const storedKeys = loadKeysFromStorage(initialKeys)
-
-    return [
-      ...initialKeys,
-      ...storedKeys, // Keys were added from elsewhere, via addKey
-    ]
-  })
+  const [keys, setKeys] = useState<DismissibleKeys>(initialKeys)
 
   const [dismissed, setDismissed] = useState<DismissedKey[]>([])
   const localStorageUtils = useLocalStorageUtils({ keys })
@@ -87,13 +80,20 @@ export const DismissibleProvider: React.FC<{
     setDismissed(get(id))
   }, [id])
 
+  useEffect(() => {
+    const storedKeys = loadKeysFromStorage(initialKeys)
+    if (storedKeys.length > 0) {
+      setKeys((prev) => [...prev, ...storedKeys])
+    }
+  }, [])
+
   const mounted = useDidMount()
 
   const isDismissed = useCallback(
     (key: DismissibleKey) => {
       if (!mounted) {
         return {
-          status: false,
+          status: true,
           timestamp: 0,
         }
       }
@@ -195,11 +195,6 @@ export const localStorageKey = (id: string) => {
 }
 
 const loadKeysFromStorage = (initialKeys: DismissibleKeys): DismissibleKeys => {
-  // Make SSR safe
-  if (typeof window === "undefined") {
-    return []
-  }
-
   const allStorageKeys = Array.from(
     { length: localStorage.length },
     (_, index) => localStorage.key(index)
