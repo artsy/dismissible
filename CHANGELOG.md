@@ -1,3 +1,15 @@
+# v0.9.0 (Tue Jul 07 2026)
+
+#### 🚀  Enhancement
+
+- chore: add link-pr-to-notion workflow [#15](https://github.com/artsy/dismissible/pull/15) ([@rabidpaul](https://github.com/rabidpaul))
+
+#### Authors: 1
+
+- Paul Sanders ([@rabidpaul](https://github.com/rabidpaul))
+
+---
+
 # v0.8.1 (Fri May 15 2026)
 
 #### 🐛  Bug Fix
