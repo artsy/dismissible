@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  auto: artsy/auto@2.2.0
+  auto: artsy/auto@3.0.0
   node: circleci/node@6.3.0
 
 workflows:
@@ -30,7 +30,7 @@ workflows:
           filters:
             branches:
               ignore: main
-          node-version: "16.10.0"
+          node-version: "22.23.4"
           requires:
             - test
             - lint
@@ -41,7 +41,7 @@ workflows:
           filters:
             branches:
               only: main
-          node-version: "16.10.0"
+          node-version: "22.23.4"
           requires:
             - test
             - lint
